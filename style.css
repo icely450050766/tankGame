@@ -1,0 +1,72 @@
+/* 容器 */
+body{
+    padding: 0px;
+    margin: 0px;
+}
+.container{ /* 650/25 = 26 个单位 */
+    width: 650px;
+    margin: 1% auto;
+    height: 650px;
+    border: 1px solid rgba(0,0,0,0.5);
+    font-size: 0px;
+    position: relative;
+}
+.container > img{
+    width: 25px;
+    height: 25px;
+    margin: 0px;
+}
+
+/* 坦克 */
+.tank{  /* 坦克宽度50px（2个单位） */
+    width: 50px;
+    height: 50px;
+    padding: 0px;
+    margin: 0px;
+    font-size: 0px;
+
+    overflow: hidden;
+    display: inline-block;
+    position: absolute;
+}
+.tank *{
+    display: inline-block;
+    margin: 0px;
+    position: relative;
+}
+.tank .rect{
+    width: 20%;
+    height: inherit;
+}
+.tank .square{
+    width: 55%;
+    height: 50%;
+    margin: 25% 2%;
+    overflow: hidden;
+}
+.tank .square .circle{
+    width: 60%;
+    height: 60%;
+    border-radius: 100%;
+    margin: 20%;
+    background: black;
+}
+.tank .launch{ /* 发射枪 */
+    background: black;
+    width: 12%;
+    height: 50%;
+    text-align: center;
+    position: absolute;
+    left: 43%;
+}
+.tank .launch .launch-spot{ /* 发射点 */
+    background: inherit;
+    width: 20%;
+    height: 10%;
+}
+.tank-red *{
+    background: red;
+}
+.tank-green *{
+    background: rgb(0,255,0);
+}

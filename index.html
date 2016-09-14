@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <!--<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">-->
+    <title>坦克大战</title>
+    <link href="style.css" rel="stylesheet" type="text/css">
+</head>
+<body onload="init();">
+    <div class="container"></div>
+
+    <!--<div id="divId" style="width: 25px;height:25px; background-color: red"></div>-->
+    <!--<button onclick="func()">aaa</button>-->
+
+    <script src="node_modules/jquery/dist/jquery.min.js"></script>
+    <script src="js/tankClass.js"></script>
+    <script src="js/index.js"></script>
+
+<script>
+    var temp = 0;
+    function func(){
+        temp += 90;
+        var t = document.getElementById('divId')
+        t.style.transform = 'rotate(' + temp + 'deg)';// 旋转90度
+        console.log( $(t).position().left )
+        console.log( $(t).position().top )
+    }
+</script>
+</body>
+</html>
