@@ -10,6 +10,7 @@ body{
     border: 1px solid rgba(0,0,0,0.5);
     font-size: 0px;
     position: relative;
+    overflow: hidden;
 }
 .container > img{
     width: 25px;
@@ -28,6 +29,13 @@ body{
     overflow: hidden;
     display: inline-block;
     position: absolute;
+
+    /* 动画过渡效果 */
+    /*-webkit-transition: all 0.1s;*/
+    /*-moz-transition: all 0.1s;*/
+    /*-ms-transition: all 0.1s;*/
+    /*-o-transition: all 0.1s;*/
+    /*transition: all 0.1s;*/
 }
 .tank *{
     display: inline-block;
@@ -55,18 +63,39 @@ body{
     background: black;
     width: 12%;
     height: 50%;
-    text-align: center;
     position: absolute;
     left: 43%;
+    /*transform: rotate(5deg);/!* 偏移一定角度 *!/*/
 }
 .tank .launch .launch-spot{ /* 发射点 */
     background: inherit;
-    width: 20%;
+    width: 100%;
     height: 10%;
+    position: relative;
 }
 .tank-red *{
     background: red;
 }
 .tank-green *{
     background: rgb(0,255,0);
+}
+
+/* 子弹 */
+.bullet{
+    width: 5px;
+    height: 5px;
+    border-radius: 100%;
+    background: yellow;
+    display: inline-block;
+    position: absolute;
+    z-index: 1000;
+    left: 0px;
+    top: 0px;
+
+    /* 动画过渡效果 */
+    -webkit-transition: all 0.1s;
+    -moz-transition: all 0.1s;
+    -ms-transition: all 0.1s;
+    -o-transition: all 0.1s;
+    transition: all 0.1s;
 }
