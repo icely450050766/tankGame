@@ -82,61 +82,47 @@
             var posX = Math.floor( positionX / this.cellSize );
             var posY = Math.floor( positionY / this.cellSize );
 
-            //【墙】 向上/向下取整 碰到 墙 都不可通过
-            if( this.mapArr[posY][posX] == 2 ) return false;
-            if( direction == 'top'  ||  direction == 'bottom' ){// 垂直飞行
-                var _posX = Math.ceil( positionX / this.cellSize );// 横坐标 向上取整
-                if( this.mapArr[posY][_posX] == 2 ) return false;
+            // 向下取整
+            if( !returnIsCanPass.call( this, posX, posY ) ){
+               return false;
 
-            }else if( direction == 'left'  ||  direction == 'right' ){// 水平飞行
-                var _posY = Math.ceil( positionY / this.cellSize );// 纵坐标 向上取整
-                if( this.mapArr[_posY][posX] == 2 ) return false;
-            }
-
-            // 向下取整 有可击破的障碍物：【砖头】
-            if( this.mapArr[posY][posX] == 1 ){
-                shootBrick.call( this, posX, posY );
-                return false; // 不可通过
-
-            }else if( typeof this.mapArr[posY][posX] == "object" ){// 向下取整 【坦克】
-                shootTank.call( this, posX, posY  );
-                return false; // 不可通过
-
-
-            }else{ // 向上取整 【 无障碍物 或 河水（子弹可通过）】
+            }else{ // 向上取整
 
                 if( direction == 'top'  ||  direction == 'bottom' ){// 垂直飞行
 
                     posX = Math.ceil( positionX / this.cellSize );// 横坐标 向上取整
-
-                    if( this.mapArr[posY][posX] == 1 ){ // 有可击破的障碍物：【砖头】
-                        shootBrick.call( this, posX, posY );
-                        return false; // 不可通过
-
-                    }else if( typeof this.mapArr[posY][posX] == "object" ){//【坦克】
-                        shootTank.call( this, posX, posY );
-                        return false; // 不可通过
-
-                    }
-                    else return true; // 向上、向下取整 都没有可击破的 障碍物（砖头/坦克） 可通过
+                    return returnIsCanPass.call( this, posX, posY );
 
                 }else if( direction == 'left'  ||  direction == 'right' ){// 水平飞行
 
                     posY = Math.ceil( positionY / this.cellSize );// 纵坐标 向上取整
-
-                    if( this.mapArr[posY][posX] == 1 ){ // 有可击破的障碍物：砖头
-                        shootBrick.call( this, posX, posY );
-                        return false; // 不可通过
-
-                    }else if( typeof this.mapArr[posY][posX] == "object" ){// 【坦克】
-                        shootTank.call( this, posX, posY  );
-                        return false; // 不可通过
-
-                    }
-                    else return true; // 向上、向下取整 都没有可击破的 障碍物（砖头/坦克） 可通过
+                    return returnIsCanPass.call( this, posX, posY );
                 }
 
             }
+
+            // （辅助函数）传入一个位置，返回是否可通过（this是 子弹类对象）
+            function returnIsCanPass( posX, posY ){
+
+                //【墙】 向上/向下取整 碰到 墙 都不可通过
+                if( this.mapArr[posY][posX] == 2 ) return false;
+
+                if( this.mapArr[posY][posX] == 1 ){ //  有可击破的障碍物：【砖头】
+                    shootBrick.call( this, posX, posY );
+                    return false; // 不可通过
+
+                }else if( this.mapArr[posY][posX] == -1 ){// 【钻石】
+                    this.$bullet.trigger('gameOver');// 触发事件，游戏结束
+                    return false; // 不可通过
+
+                }else if( typeof this.mapArr[posY][posX] == "object" ){// 【坦克】
+                    shootTank.call( this, posX, posY  );
+                    return false; // 不可通过
+
+                }
+                else return true;
+            }
+
         }
 
         // （辅助函数）击破砖头

@@ -8,7 +8,7 @@ var index = (function(){
     return{
 
         // 初始化 坦克类、子弹类 的数据
-        mapArr : [],// 存放地图 状态 二维数组( 0无障碍物，1砖头（可击破），2墙（不可击破），3河水（子弹可通过）) 坦克类、子弹类都有指针指向该数组，实现地图共享
+        mapArr : [],// 存放地图 状态 二维数组( -1钻石，0无障碍物，1砖头（可击破），2墙（不可击破），3河水（子弹可通过）) 坦克类、子弹类都有指针指向该数组，实现地图共享
         cellSize : 25, // 地图每个单元格的边长(25px)
 
         // 坦克（只用于初始化，数据不会随着 当轮游戏状态 而变化）
@@ -25,7 +25,10 @@ var index = (function(){
 
         // 初始化
         init: function(){
+
             this.upLevelBtnAddClickEvent();// “升级”按钮 添加点击事件
+            this.rePlayBtnAddClickEvent();// “重新开始”按钮 添加点击事件
+
             $('#upLevelBtn').trigger('click');// 模拟点击事件 作为初始化
         },
 
@@ -59,7 +62,7 @@ var index = (function(){
             _mapArr[22] =  [0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,3];
             _mapArr[23] =  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,3];
             _mapArr[24] =  [3,3,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,1,1,1,1,1,1,3,3];
-            _mapArr[25] =  [3,3,1,1,0,0,1,1,0,0,0,1,0,0,1,0,0,0,1,1,1,1,1,1,0,0];
+            _mapArr[25] =  [3,3,1,1,0,0,1,1,0,0,0,1,-1,-1,1,0,0,0,1,1,1,1,1,1,0,0];
 
             this.mapArr = _mapArr;
             //console.log( this.mapArr );
@@ -81,6 +84,10 @@ var index = (function(){
 
                         }else if( this.mapArr[i][j] == 3 ){ // 河水（子弹可通过）
                             _content += '<img src="img/river.png">';
+
+                        }else if( this.mapArr[i][j] == -1 ){ // 钻石
+                            _content += '<img src="img/jewel.png">';
+
                         }
                     }
                 }
@@ -147,7 +154,6 @@ var index = (function(){
             $.tankClass.prototype.cellSize = this.cellSize;
         },
 
-
         // 监听 坦克死亡事件，反馈玩家 赢/输（this 是 tankClass对象）
         tankEventListener : function(){
 
@@ -162,17 +168,19 @@ var index = (function(){
                         //location.reload();
                         $('#upLevelBtn').trigger('click');// 模拟点击事件 作为初始化
                     }
+                    else $('.tankGame-container .container').empty().off();// 清空容器内容、清空所有监听事件
                 }
+
             }.bind( this ));
 
             // 监听 游戏结束 事件
-            $('.container').on('gameOver', '.tank', function(){
+            $('.container').on('gameOver', function(){
                 //console.log('gameOver');
                 if( confirm('闯关失败，游戏结束！是否重来一次？') ){
                     //location.reload();
-                    this.level --;
-                    $('#upLevelBtn').trigger('click');// 模拟点击事件 作为初始化
+                    $('#rePlayBtn').trigger('click');// 模拟点击事件 作为初始化
                 }
+                else $('.tankGame-container .container').empty().off();// 清空容器内容、清空所有监听事件
             }.bind( this ));
         },
 
@@ -243,6 +251,17 @@ var index = (function(){
             $('.myLevel-num').text( this.level );// 设置当前等级
 
         },
+
+        // “重新开始”按钮 添加点击事件（this 是 tankClass对象）
+        rePlayBtnAddClickEvent : function(){
+
+            $(document).on( 'click', '#rePlayBtn', function(){
+                this.level --;
+                $('#upLevelBtn').trigger('click');// 模拟点击事件
+
+                $('#rePlayBtn').trigger('blur');// 升级按钮 失去焦点
+            }.bind( this ));
+        }
 
     }
 })();
