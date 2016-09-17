@@ -45,6 +45,9 @@
             'top': posY + 'px',
             'left': posX + 'px'
         } );
+
+        if( !this.type_isRed )  $('.remainBlood').css( 'height', this.blood + '%' );// 玩家 设置血量条
+
         return $_str;
     };
 
@@ -83,7 +86,7 @@
                 // 根据运动方向，实现运动动画（参数：每一步的大小（步长））
                 takeOneStep.call( this, this.run.speed );
 
-            }.bind(this), 100);
+            }.bind(this), 150);
 
 
         }else{ // 绿色坦克（玩家）
@@ -279,6 +282,8 @@
         //（辅助函数）创建 并发射 子弹 （this 是坦克类对象）
         function createBulletAndShoot(){
 
+            if( this.$tank == null ) return;// 坦克死亡
+
             // 创建一颗子弹
             var _top = this.$tank.find('.launch-spot').offset().top - _container.offset().top;
             var _left = this.$tank.find('.launch-spot').offset().left - _container.offset().left;
@@ -311,7 +316,13 @@
 
         this.blood -= 10;// 血量减少
 
-        if( this.blood <= 0 ){
+        // 被射中的是玩家，修改血量条
+        if( !this.type_isRed ){
+            $('.remainBlood').css( 'height', this.blood + '%' );
+        }
+
+        // 血量<0
+        if( this.blood < 0 ){
 
             // 坦克死亡，不再占用位置，因此要 修改 mapArr地图数组
             var _posX = this.$tank.position().left / this.cellSize;

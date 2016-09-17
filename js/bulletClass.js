@@ -6,7 +6,7 @@
 
     // 构造函数（参数：初始位置）
     var bulletClass = function( posX, posY, creater ){
-        this.speed = 20;
+        this.speed = 20;// 不能大于this.cellSize，否则会出现 砖头被间隔射击 的情况
         this.creater = creater;// 创建人（用于确定攻击对象，敌人之间不能互相残杀）
         this.$bullet = this.createBullet( posX, posY );
     };

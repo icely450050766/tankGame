@@ -4,13 +4,24 @@
     <meta charset="UTF-8">
     <!--<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">-->
     <title>坦克大战</title>
-    <link href="style.css" rel="stylesheet" type="text/css">
+    <link href="css/rem.css" rel="stylesheet" type="text/css">
+    <link href="css/style.css" rel="stylesheet" type="text/css">
 </head>
 
 <body onload="init();">
 
-    <div class="container"></div>
-
+    <div class="tankGame-container">
+        <div class="container"></div>
+        <div class="dataBox">
+            <div class="myLevel">
+                <p>Level<span class="myLevel-num"></span></p>
+                <button id="upLevelBtn">升级</button>
+            </div>
+            <div class="myBlood">
+                <div class="remainBlood"></div>
+            </div>
+        </div>
+    </div>
 
     <script src="node_modules/jquery/dist/jquery.min.js"></script>
     <script src="js/bulletClass.js"></script>

@@ -3,17 +3,74 @@ body{
     padding: 0px;
     margin: 0px;
 }
-.container{ /* 650/25 = 26 个单位 */
-    width: 650px;
-    margin: 1% auto;
+.tankGame-container{
+    width: 750px;
     height: 650px;
+    margin: 1% auto;
+    position: relative;
+    overflow: hidden;
+}
+.tankGame-container > *{
+    /*display: inline-block;*/
+    float: left;
+    height: inherit;
+}
+
+/* 游戏容器 */
+.tankGame-container .container{ /* 650/25 = 26 个单位 */
+    width: 650px;
     border: 1px solid rgba(0,0,0,0.5);
     font-size: 0px;
     position: relative;
     overflow: hidden;
 }
-.container > img{
+.tankGame-container .container > img{
     margin: 0px;
+}
+
+/* 游戏数据 */
+.tankGame-container .dataBox{
+    width: 70px;
+    padding: 0px 10px;
+    font-size: 20px;
+    text-align: center;
+    border: 1px solid red;
+    position: relative;
+}
+.tankGame-container .dataBox .myLevel{
+    width: 100%;
+    height: 25%;
+}
+.tankGame-container .dataBox .myLevel #upLevelBtn{
+    width: 100%;
+    padding: 8%;
+    border-radius: 6px;
+    background: rgb(0,174,239);
+    cursor: pointer;
+}
+.tankGame-container .dataBox .myBlood{
+    width: 20px;
+    height: 70%;
+    border-radius: 3px;
+    border: 1px solid black;
+    margin: 0% auto;
+    position: relative;
+    overflow: hidden;
+}
+.tankGame-container .dataBox .myBlood .remainBlood{
+    width: 100%;
+    height: 0%;
+    border-radius: 3px;
+    background: red;
+    position: absolute;
+    bottom: 0px;
+
+    /* 变化的动画效果 */
+    -webkit-transition: all 0.2s;
+    -moz-transition: all 0.2s;
+    -ms-transition: all 0.2s;
+    -o-transition: all 0.2s;
+    transition: all 0.2s;
 }
 
 /* 坦克 */
@@ -66,6 +123,7 @@ body{
     height: 50%;
     position: absolute;
     left: 43%;
+    /*top: 10%;*/
     /*transform: rotate(5deg);/!* 偏移一定角度 *!/*/
 }
 .tank .launch .launch-spot{ /* 发射点 */
