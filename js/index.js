@@ -7,40 +7,34 @@
 var index = (function(){
     return{
 
-        mapArr : [],// 存放地图 状态 二维数组( 0无障碍物，1砖头（可击破），2墙（不可击破），3河水（子弹可通过）)
-        cellSize : 25,
+        // 初始化 坦克类、子弹类 的数据
+        mapArr : [],// 存放地图 状态 二维数组( 0无障碍物，1砖头（可击破），2墙（不可击破），3河水（子弹可通过）) 坦克类、子弹类都有指针指向该数组，实现地图共享
+        cellSize : 25, // 地图每个单元格的边长(25px)
+
+        // 坦克
+        redTankNum : 4,// 红色坦克数量
+        tankArr : [],// 坦克数组，记录每个坦克的 new时返回的 this 指针（前面 redTankNum个 是红色坦克；最后一个是 绿色坦克）
+        tankPosArr : [{ x:100, y:50 }, { x: 250, y: 325 }, { x: 600, y: 0 }, { x: 550, y: 550 }, { x:225, y: 600 }],// 初始化 坦克位置 数组（前面 redTankNum个 是红色坦克；最后一个是 绿色坦克）
+
+        redTankDieNum : 0,// 红色坦克死亡数（判断玩家是否赢了）
+
+        // 难度
+        level : 1,
+        shootProbability : 0.05,// 红色坦克的 子弹射击概率
 
         // 初始化
         init: function(){
 
-            //$(document).on('click', '.tank', function(){
-            //    console.log('a')
-            //});
+            this.tankEventListener();// 监听 坦克死亡事件，反馈玩家 赢/输（this 是 tankClass对象）
 
             this.createMap();// 创建地图（场景）
+            this.initBulletAndTankClassPrototype(); // 初始化 子弹类、坦克类 的prototype（公共属性值）
 
-            // 地图二维数组
-            $.bulletClass.prototype.mapArr = this.mapArr;// 初始化 子弹类 地图二维数组（该属性所有 坦克类对象 共用）
-            $.tankClass.prototype.mapArr = this.mapArr;// 初始化 坦克类 地图二维数组（该属性所有 坦克类对象 共用）
-
-            //地图每个单元格的边长(25px)
-            $.bulletClass.prototype.cellSize = this.cellSize;
-            $.tankClass.prototype.cellSize = this.cellSize;
-
-            // 创建坦克
-            var t = new $.tankClass( true, 100, 50, 25 );
-            $('.container').append( t.$tank );
-            t.tankRun();// 坦克运动
-            t.tankShoot();// 坦克射击
-
-            var t2 = new $.tankClass( false, 200, 200, 25 );
-            $('.container').append( t2.$tank );
-            t2.tankRun();
-            t2.tankShoot();
-
+            this.createTank();// 创建 坦克，加入到视图中
+            this.updateMapArr_byTankPosArr();// 根据当前坦克的位置，更新 地图 mapArr[]
         },
 
-        // 创建 地图 （26*26 个单位）this 是 tankClass对象
+        // （辅助函数）创建 地图 （26*26 个单位）（this 是 tankClass对象）
         createMap: function(){
 
             var _mapArr = [];
@@ -98,10 +92,88 @@ var index = (function(){
                 }
             }
 
-            $('.container').append( _content );
+            $('.container').append( _content ); // 插入
+
+            // 限制图片 宽和高
+            $('.container').children('img').css({
+                'width' : this.cellSize + 'px',
+                'height' : this.cellSize + 'px'
+            });
 
         },
 
+        // （辅助函数）根据当前坦克的位置，更新 地图 mapArr[]
+        updateMapArr_byTankPosArr : function(){
+
+            // 遍历 所有坦克 的位置数组
+            for( var i=0; i < this.tankPosArr.length; i++ ){
+
+                var posX = this.tankPosArr[i].x / this.cellSize;
+                var posY = this.tankPosArr[i].y / this.cellSize;
+
+                // 改为存放 当前停放坦克的 this指针
+                this.mapArr[posY][posX] = this.tankArr[i];// 左上
+                this.mapArr[posY][posX+1] = this.tankArr[i];// 右上
+                this.mapArr[posY+1][posX] = this.tankArr[i];// 左下
+                this.mapArr[posY+1][posX+1] = this.tankArr[i];// 右下
+            }
+
+            //console.log( this.mapArr );
+        },
+
+        // （辅助函数）创建 坦克（this 是 tankClass对象）
+        createTank : function(){
+
+            for( var i=0; i <= this.redTankNum; i++ ){
+
+                var _isRedTank =  i < this.redTankNum ? true : false;// （前面 redTankNum个 是红色坦克；最后一个是 绿色坦克）
+
+                var t = new $.tankClass( _isRedTank, this.tankPosArr[i].x, this.tankPosArr[i].y, 25 );
+                $('.container').append( t.$tank );
+
+                t.tankRun();// 坦克运动
+                t.tankShoot( this.shootProbability );// 坦克射击( 射击概率(0,1] )
+
+                this.tankArr.push( t );// 加入到 红色坦克数组
+            }
+        },
+
+        // 初始化 子弹类、坦克类 的prototype（公共属性值）
+        initBulletAndTankClassPrototype : function(){
+
+            // 坦克类、子弹类的 marArr指针 指向地图二维数组
+            $.bulletClass.prototype.mapArr = this.mapArr;// 初始化 子弹类 地图二维数组 指针（该属性所有 坦克类对象 共用）
+            $.tankClass.prototype.mapArr = this.mapArr;// 初始化 坦克类 地图二维数组 指针（该属性所有 坦克类对象 共用）
+
+            // 地图每个单元格的边长(25px)
+            $.bulletClass.prototype.cellSize = this.cellSize;
+            $.tankClass.prototype.cellSize = this.cellSize;
+        },
+
+        // 监听 坦克死亡事件，反馈玩家 赢/输（this 是 tankClass对象）
+        tankEventListener : function(){
+
+            // 监听 坦克死亡 事件
+            $('.container').on('tankDie', '.tank', function(){
+                //console.log('tankDie');
+                this.redTankDieNum ++;
+                console.log( this.redTankDieNum );
+
+                if( this.redTankDieNum == this.redTankNum ){
+                    if( confirm('恭喜你赢了，是否重新开始？') ){
+                        location.reload();
+                    }
+                }
+            }.bind( this ));
+
+            // 监听 游戏结束 事件
+            $('.container').on('gameOver', '.tank', function(){
+                //console.log('gameOver');
+                if( confirm('游戏结束，是否重新开始？') ){
+                    location.reload();
+                }
+            });
+        },
     }
 })();
 
