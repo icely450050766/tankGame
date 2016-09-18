@@ -8,13 +8,16 @@ var index = (function(){
     return{
 
         // 初始化 坦克类、子弹类 的数据
+        cellSize : 2.5, // 地图每个单元格的边长( 2.5rem = 25px )
+        remToPx : $('#remToPx').width(), // 用于单位换算：1rem = ?px
+
         mapArr : [],// 存放地图 状态 二维数组( -1钻石，0无障碍物，1砖头（可击破），2墙（不可击破），3河水（子弹可通过）) 坦克类、子弹类都有指针指向该数组，实现地图共享
-        cellSize : 25, // 地图每个单元格的边长(25px)
+        mapArrWidthLength : 0,// 数组宽 长度
+        mapArrHeightLength : 0,// 数组高 长度
 
         // 坦克（只用于初始化，数据不会随着 当轮游戏状态 而变化）
-        redTankNum : 4,// 红色坦克数量
-        tankArr : [],// 坦克数组，记录每个坦克的 new时返回的 this 指针（前面 redTankNum个 是红色坦克；最后一个是 绿色坦克）
-        tankPosArr : [{ x:100, y:50 }, { x: 250, y: 325 }, { x: 600, y: 0 }, { x: 550, y: 550 }, { x:225, y: 600 }],// 初始化 坦克位置 数组（前面 redTankNum个 是红色坦克；最后一个是 绿色坦克）
+        tankArr : [],// 坦克数组，记录每个坦克的 new时返回的 this 指针（前面  是红色坦克；最后一个是 绿色坦克）
+        tankPosArr : [{ x:24, y:0 }, { x: 4, y: 2 }, { x: 10, y: 13 }, { x: 22, y: 22 }, { x:9, y: 24 }],// 初始化 坦克位置 数组（坦克位置为数组下标）
 
         // 红色坦克死亡数（判断玩家是否赢了）
         redTankDieNum : 0,
@@ -25,6 +28,24 @@ var index = (function(){
 
         // 初始化
         init: function(){
+
+            var _height = $(window).height();
+            var _width = $(window).width();
+            //console.log( _width );
+
+            var _min = _width < _height ? _width : _height;
+            _min *= 0.95;
+
+            $('.tankGame-container').css({
+                'height': _min + 'px',
+                'width': _min * (11/9) + 'px',
+            });
+            $('.container').css({
+                'width': _min + 'px',
+                'height': _min  + 'px',
+            });
+
+            ///////////////////////////////////////////////////////////////
 
             this.upLevelBtnAddClickEvent();// “升级”按钮 添加点击事件
             this.rePlayBtnAddClickEvent();// “重新开始”按钮 添加点击事件
@@ -65,40 +86,52 @@ var index = (function(){
             _mapArr[25] =  [3,3,1,1,0,0,1,1,0,0,0,1,-1,-1,1,0,0,0,1,1,1,1,1,1,0,0];
 
             this.mapArr = _mapArr;
+            this.mapArrWidthLength = this.mapArr[0].length; // 数组宽 长度
+            this.mapArrHeightLength = this.mapArr.length; // 数组高度 长度
             //console.log( this.mapArr );
+            //console.log( this.mapArrWidthLength );
+            //console.log( this.mapArrHeightLength );
 
+            this.cellSize = ( $('.container').width() / ( this.mapArrWidthLength * this.remToPx ) );// 单元格的长度
+
+            // 图片只能用 绝对定位。因为 this.cellSize 有小数，会产生误差。当行数过多时，误差会越大，图片总宽、高 可能比 .container的宽、高 要大
             var _content = '';
             for( var i=0; i < 26; i++ ){
                 for( var j=0; j < 26; j++ ){
 
+                    var _top = i * this.cellSize + 'rem';
+                    var _left = j * this.cellSize + 'rem';
+
                     if( !this.mapArr[i][j] ){ // 无障碍物
-                        _content += '<img src="img/blank.png">';
+                        _content += '<img src="img/blank.png" ';
 
                     }else{
 
                         if( this.mapArr[i][j] == 1 ){ // 砖头（可击破）
-                            _content += '<img src="img/brick.png">';
+                            _content += '<img src="img/brick.png" ';
 
                         }else if( this.mapArr[i][j] == 2 ){ // 墙（不可击破）
-                            _content += '<img src="img/wall.png">';
+                            _content += '<img src="img/wall.png" ';
 
                         }else if( this.mapArr[i][j] == 3 ){ // 河水（子弹可通过）
-                            _content += '<img src="img/river.png">';
+                            _content += '<img src="img/river.png" ';
 
                         }else if( this.mapArr[i][j] == -1 ){ // 钻石
-                            _content += '<img src="img/jewel.png">';
+                            _content += '<img src="img/jewel.png" ';
 
                         }
                     }
+                    _content +=  'style="top: ' + _top + '; left: ' + _left + '">';
                 }
+                _content += '<br/>';
             }
 
             $('.container').append( _content ); // 插入
 
             // 限制图片 宽和高
             $('.container').children('img').css({
-                'width' : this.cellSize + 'px',
-                'height' : this.cellSize + 'px'
+                'width' : this.cellSize + 'rem',
+                'height' : this.cellSize + 'rem',
             });
 
         },
@@ -109,8 +142,8 @@ var index = (function(){
             // 遍历 所有坦克 的位置数组
             for( var i=0; i < this.tankPosArr.length; i++ ){
 
-                var posX = this.tankPosArr[i].x / this.cellSize;
-                var posY = this.tankPosArr[i].y / this.cellSize;
+                var posX = this.tankPosArr[i].x;
+                var posY = this.tankPosArr[i].y;
 
                 //console.log( this.tankArr[i] )
 
@@ -127,11 +160,11 @@ var index = (function(){
         // 创建 坦克（this 是 tankClass对象）
         createTank : function(){
 
-            for( var i=0; i <= this.redTankNum; i++ ){
+            for( var i=0; i <= this.tankPosArr.length-1; i++ ){
 
-                var _isRedTank =  i < this.redTankNum ? true : false;// （前面 redTankNum个 是红色坦克；最后一个是 绿色坦克）
+                var _isRedTank =  i < this.tankPosArr.length-1 ? true : false;// （前面 是红色坦克；最后一个是 绿色坦克）
 
-                var t = new $.tankClass( _isRedTank, this.tankPosArr[i].x, this.tankPosArr[i].y, 25 );
+                var t = new $.tankClass( _isRedTank, this.tankPosArr[i].x, this.tankPosArr[i].y, this.cellSize );
                 $('.container').append( t.$tank );
 
                 t.tankRun();// 坦克运动
@@ -145,13 +178,17 @@ var index = (function(){
         // 初始化 子弹类、坦克类 的prototype（公共属性值）
         initBulletAndTankClassPrototype : function(){
 
-            // 坦克类、子弹类的 marArr指针 指向地图二维数组
-            $.bulletClass.prototype.mapArr = this.mapArr;// 初始化 子弹类 地图二维数组 指针（该属性所有 坦克类对象 共用）
-            $.tankClass.prototype.mapArr = this.mapArr;// 初始化 坦克类 地图二维数组 指针（该属性所有 坦克类对象 共用）
+            // 坦克类、子弹类的 marArr指针 指向地图二维数组（引用对象）
+            $.bulletClass.prototype.mapArr =  $.tankClass.prototype.mapArr = this.mapArr;// （该属性所有 类对象 共用）
 
-            // 地图每个单元格的边长(25px)
-            $.bulletClass.prototype.cellSize = this.cellSize;
-            $.tankClass.prototype.cellSize = this.cellSize;
+            // 地图信息
+            $.bulletClass.prototype.cellSize = $.tankClass.prototype.cellSize = this.cellSize;// 地图每个单元格的边长
+            $.bulletClass.prototype.mapArrHeightLength = $.tankClass.prototype.mapArrHeightLength = this.mapArrHeightLength;
+            $.bulletClass.prototype.mapArrWidthLength = $.tankClass.prototype.mapArrWidthLength = this.mapArrWidthLength;
+
+            // 用于单位换算：1rem = ?px
+            $.bulletClass.prototype.remToPx = $.tankClass.prototype.remToPx = this.remToPx;
+
         },
 
         // 监听 坦克死亡事件，反馈玩家 赢/输（this 是 tankClass对象）
@@ -163,7 +200,7 @@ var index = (function(){
                 this.redTankDieNum ++;
                 console.log( this.redTankDieNum );
 
-                if( this.redTankDieNum == this.redTankNum ){
+                if( this.redTankDieNum == this.tankPosArr-1 ){
                     if( confirm('闯关成功！是否进入下一关？') ){
                         //location.reload();
                         $('#upLevelBtn').trigger('click');// 模拟点击事件 作为初始化
@@ -222,14 +259,16 @@ var index = (function(){
                 this.shootProbability += 0.05;
 
             }else{// 大于5级，增加红色坦克数量
-                this.redTankNum ++;
 
                 // 随机生成一个位置, 判断该位置是否可放置（左上、左下、右上、右下都要为0，而且没有其他坦克，才能放下）
                 var newTankPos = null;
                 do {
-                    newTankPos = {x: parseInt(Math.random()*25) * 25, y: parseInt(Math.random()*25) * 25};// [0,625) 且是 25的倍数
-                    var _posX = newTankPos.x / this.cellSize;
-                    var _posY = newTankPos.y / this.cellSize;
+                    var _posX = parseInt( Math.random() * (this.mapArrWidthLength-2) ) % (this.mapArrWidthLength-2);// [0, this.mapArrWidthLength-2]
+                    var _posY = parseInt( Math.random() * (this.mapArrHeightLength-2) ) % (this.mapArrHeightLength-2);// [0, this.mapArrHeightLength-2]
+                    //console.log( _posX);
+                    //console.log( _posY);
+
+                    newTankPos = { x: _posX, y: _posY };
 
                 } while (this.mapArr[_posY][_posX] || this.mapArr[_posY+1][_posX] || this.mapArr[_posY][_posX+1] || this.mapArr[_posY+1][_posX+1]
                 || typeof this.mapArr[_posY][_posX] == "object"  ||  typeof this.mapArr[_posY+1][_posX] == "object"
@@ -239,7 +278,7 @@ var index = (function(){
                 this.tankPosArr.unshift( newTankPos );// 加入到 坦克位置数组 前面
 
                 // 插入 新坦克
-                var t = new $.tankClass( true, this.tankPosArr[0].x, this.tankPosArr[0].y, 25 );
+                var t = new $.tankClass( true, this.tankPosArr[0].x, this.tankPosArr[0].y, this.cellSize );
                 $('.container').append( t.$tank );
 
                 t.tankRun();// 坦克运动
@@ -256,7 +295,14 @@ var index = (function(){
         rePlayBtnAddClickEvent : function(){
 
             $(document).on( 'click', '#rePlayBtn', function(){
+
+                if( this.level > 5 ){
+                    this.tankPosArr.shift();
+                }
                 this.level --;
+
+                //console.log( this.tankPosArr );
+
                 $('#upLevelBtn').trigger('click');// 模拟点击事件
 
                 $('#rePlayBtn').trigger('blur');// 升级按钮 失去焦点

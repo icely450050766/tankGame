@@ -9,9 +9,11 @@
     var tankClass = function( isRed, posX, posY ){
 
         this.type_isRed = isRed;// 坦克的 类型（是否是红色）
-
-        this.run = { count: 0, direction: 'top', speed : tankClass.prototype.cellSize };// 运动次数（每次500ms）、运动方向、运动步长
         this.blood = 100;// 血量
+
+        this.size = { width: 2, height: 2 };// 坦克大小（ 占 地图数组的2个单元格 ）
+        this.pos = { x: 0, y: 0 };// 当前位置
+        this.run = { count: 0, direction: 'top', speed : tankClass.prototype.cellSize };// 运动次数（每次500ms）、运动方向、运动步长(rem)
 
         this.$tank = this.createTank( this.type_isRed, posX, posY );// 坦克的 jq对象
         //this.tankRun();// 要加入到html中 才能调用，否则不能获取承载坦克 的容器的大小
@@ -21,7 +23,11 @@
 
     // 所有对象共用属性
     tankClass.prototype.mapArr = null; // 指向地图数组 的指针
+    tankClass.prototype.mapArrWidthLength = 0;
+    tankClass.prototype.mapArrHeightLength = 0;
+
     tankClass.prototype.cellSize = null;
+    tankClass.prototype.remToPx = 0;// 运动步长是rem为单位, 1rem -> ?px
 
     // 生成一个坦克，返回jq对象
     tankClass.prototype.createTank = function( isRed, posX, posY ){
@@ -40,13 +46,17 @@
             '</div>' );
 
         $_str.css({
-            'width': this.cellSize * 2 + 'px',
-            'height': this.cellSize * 2 + 'px',
-            'top': posY + 'px',
-            'left': posX + 'px'
+            'width': this.cellSize * this.size.width + 'rem',
+            'height': this.cellSize * this.size.height + 'rem',
+            'top': posY * this.cellSize + 'rem',
+            'left': posX * this.cellSize + 'rem'
         } );
 
         if( !this.type_isRed )  $('.remainBlood').css( 'height', this.blood + '%' );// 玩家 设置血量条
+
+        // 设置 坦克当前 位置
+        this.pos.x = posX;
+        this.pos.y = posY;
 
         return $_str;
     };
@@ -144,26 +154,17 @@
             this.$tank[0].style.transform = 'rotate(90deg)';// 旋转90度
         }
 
-        // （辅助函数）是否可通过（this 是 tankClass对象）参数是真实的坐标值（左上角）
-        function isCanPass( positionX, positionY ){
+        // （辅助函数）是否可通过（this 是 tankClass对象）参数是 坦克左上角 在地图数组中的坐标
+        function isCanPass( posX, posY ){
 
             if( this.$tank == null ) return false;// 坦克已死亡
 
-            // 求坦克当前位置对应 mapArr[]的下标
-            positionX /= this.cellSize;
-            positionY /= this.cellSize;
-
             // 左上、左下、右上、右下 在地图数组 都是0，则改点可通过
-            var _leftTop = { x: positionX, y: positionY };
-            var _rightTop = { x: positionX + 1, y: positionY };
-            var _leftBottom = { x: positionX, y: positionY + 1 };
-            var _rightBottom = { x: positionX + 1, y: positionY + 1 };
-
             // y坐标 是第一维数组下标，x坐标 是第二维数组下标（ 如果无障碍物（0）或者 是自己，则可以前进 ）
-            if( ( !this.mapArr[_leftTop.y][_leftTop.x]  ||  this.mapArr[_leftTop.y][_leftTop.x] == this )
-                &&  ( !this.mapArr[_rightTop.y][_rightTop.x]  ||  this.mapArr[_rightTop.y][_rightTop.x] == this )
-                &&  ( !this.mapArr[_leftBottom.y][_leftBottom.x]  ||  this.mapArr[_leftBottom.y][_leftBottom.x] == this )
-                &&  ( !this.mapArr[_rightBottom.y][_rightBottom.x]  ||  this.mapArr[_rightBottom.y][_rightBottom.x] == this ) ){
+            if( ( !this.mapArr[posY][posX]  ||  this.mapArr[posY][posX] == this )
+                &&  ( !this.mapArr[posY+1][posX]  ||  this.mapArr[posY+1][posX] == this )
+                &&  ( !this.mapArr[posY][posX+1]  ||  this.mapArr[posY][posX+1] == this )
+                &&  ( !this.mapArr[posY+1][posX+1]  ||  this.mapArr[posY+1][posX+1] == this ) ){
                 return true;
             }
             else  return false;
@@ -173,58 +174,62 @@
         function takeOneStep( speed ){
 
             if( this.$tank == null ) return;// 坦克已死亡
+
             var _container = this.$tank.parents('.container');// 承载坦克的容器（必须要等坦克加到.container后）
 
-            // 当前 坦克 左上角 实际位置
-            var _left = this.$tank.position().left;
-            var _top = this.$tank.position().top;
-
             //  当前 坦克左上角位置 对应数组 的下标
-            var _posX = _left / this.cellSize;
-            var _posY = _top / this.cellSize;
+            var _posX = this.pos.x;
+            var _posY = this.pos.y;
+
+            // 走一步相对于数组来说，移动_oneStep
+            var oneStep = speed / this.cellSize;
 
             switch( this.run.direction ){
                 case 'top':{
-                    if( _top - speed >= 0  &&  isCanPass.call( this, _left, _top - speed ) ){ // 不允许超出 .container 的边界 且 新位置 可通过（为0）
+                    if( _posY - oneStep >= 0  &&  isCanPass.call( this, _posX, _posY - oneStep) ){ // 不允许超出 .container 的边界 且 新位置 可通过（为0）
 
                         // 修改 移动后 地图的状态
                         tankClass.prototype.mapArr[_posY+1][_posX] = tankClass.prototype.mapArr[_posY+1][_posX+1] = 0;// 左下、右下
                         tankClass.prototype.mapArr[_posY-1][_posX] = tankClass.prototype.mapArr[_posY-1][_posX+1] = this; // top
 
-                        this.$tank.css( 'top', '-=' + speed + 'px' );
+                        this.$tank.css( 'top', '-=' + speed + 'rem' );
+                        this.pos.y -= oneStep;
                     }
                     break;
                 }
                 case 'bottom':{
-                    if( _top + speed <= _container.height() - this.$tank.height()  &&  isCanPass.call( this, _left, _top + speed ) ) { // 不允许超出 .container 的边界 且 新位置 可通过（为0）
+                    if( _posY + oneStep  <= this.mapArrHeightLength - this.size.height  &&  isCanPass.call( this, _posX, _posY + oneStep) ) { // 不允许超出 .container 的边界 且 新位置 可通过（为0）
 
                         // 修改 移动后 地图的状态
                         tankClass.prototype.mapArr[_posY][_posX] = tankClass.prototype.mapArr[_posY][_posX+1] = 0;// 左上、右上
                         tankClass.prototype.mapArr[_posY+2][_posX] = tankClass.prototype.mapArr[_posY+2][_posX+1] = this; // bottom
 
-                        this.$tank.css('top', '+=' + speed + 'px');
+                        this.$tank.css('top', '+=' + speed + 'rem');
+                        this.pos.y += oneStep;
                     }
                     break;
                 }
                 case 'left':{
-                    if( _left - speed >= 0  &&  isCanPass.call( this, _left - speed, _top ) ) { // 不允许超出 .container 的边界 且 新位置 可通过（为0）
+                    if( _posX - oneStep >= 0  &&  isCanPass.call( this, _posX - oneStep, _posY ) ) { // 不允许超出 .container 的边界 且 新位置 可通过（为0）
 
                         // 修改 移动后 地图的状态
                         tankClass.prototype.mapArr[_posY][_posX+1] = tankClass.prototype.mapArr[_posY+1][_posX+1] = 0;// 右上、右下
                         tankClass.prototype.mapArr[_posY][_posX-1] = tankClass.prototype.mapArr[_posY+1][_posX-1] = this; // left
 
-                        this.$tank.css('left', '-=' + speed + 'px');
+                        this.$tank.css('left', '-=' + speed + 'rem');
+                        this.pos.x -= oneStep;
                     }
                     break;
                 }
                 case 'right':{
-                    if( _left + speed <= _container.width() - this.$tank.width()  &&  isCanPass.call( this, _left + speed, _top ) ) { // 不允许超出 .container 的边界 且 新位置 可通过（为0）
+                    if( _posX + oneStep <= this.mapArrWidthLength - this.size.width &&  isCanPass.call( this, _posX + oneStep, _posY ) ) { // 不允许超出 .container 的边界 且 新位置 可通过（为0）
 
                         // 修改 移动后 地图的状态
                         tankClass.prototype.mapArr[_posY][_posX] = tankClass.prototype.mapArr[_posY+1][_posX] = 0;// 左上、左下
                         tankClass.prototype.mapArr[_posY][_posX+2] = tankClass.prototype.mapArr[_posY+1][_posX+2] = this; // right
 
-                        this.$tank.css('left', '+=' + speed + 'px');
+                        this.$tank.css('left', '+=' + speed + 'rem');
+                        this.pos.x += oneStep;
                     }
                     break;
                 }
@@ -325,8 +330,8 @@
         if( this.blood < 0 ){
 
             // 坦克死亡，不再占用位置，因此要 修改 mapArr地图数组
-            var _posX = this.$tank.position().left / this.cellSize;
-            var _posY = this.$tank.position().top / this.cellSize;
+            var _posX = this.pos.x;
+            var _posY = this.pos.y;
             tankClass.prototype.mapArr[_posY][_posX] = tankClass.prototype.mapArr[_posY][_posX+1] = 0;
             tankClass.prototype.mapArr[_posY+1][_posX] = tankClass.prototype.mapArr[_posY+1][_posX+1] = 0;
 

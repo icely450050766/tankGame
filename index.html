@@ -2,10 +2,12 @@
 <html>
 <head lang="en">
     <meta charset="UTF-8">
-    <!--<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">-->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>坦克大战</title>
     <link href="css/rem.css" rel="stylesheet" type="text/css">
     <link href="css/style.css" rel="stylesheet" type="text/css">
+    <link href="css/pc_style.css" rel="stylesheet" type="text/css">
+    <link href="css/phone_style.css" rel="stylesheet" type="text/css">
 </head>
 
 <body onload="init();">
@@ -23,6 +25,9 @@
             </div>
         </div>
     </div>
+
+    <!-- 用于单位换算：1rem = ?px -->
+    <div id="remToPx" style="width: 1rem; display: none"></div>
 
     <script src="node_modules/jquery/dist/jquery.min.js"></script>
     <script src="js/bulletClass.js"></script>

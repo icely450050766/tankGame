@@ -4,8 +4,8 @@ body{
     margin: 0px;
 }
 .tankGame-container{
-    width: 750px;
-    height: 660px;
+    width: 75rem;
+    height: 65rem;
     margin: 1% auto;
     position: relative;
     overflow: hidden;
@@ -13,26 +13,33 @@ body{
 .tankGame-container > *{
     /*display: inline-block;*/
     float: left;
-    height: 650px;
+    height: inherit;
 }
 
 /* 游戏容器 */
 .tankGame-container .container{ /* 650/25 = 26 个单位 */
-    width: 650px;
-    border: 1px solid rgba(0,0,0,0.5);
+    width: 65rem;
     font-size: 0px;
     position: relative;
     overflow: hidden;
+    border: 1px solid rgba(0,0,0,0.5);
+    background: rgb( 169,169,169);
 }
 .tankGame-container .container > img{
     margin: 0px;
+    padding: 0px;
+    position: absolute;
+    top: 0px;
+    height: 0px;
+    /*width: 2.5rem;*/
+    /*height: 2.5rem;*/
 }
 
 /* 游戏数据 */
 .tankGame-container .dataBox{
-    width: 70px;
-    padding: 0px 10px;
-    font-size: 20px;
+    width: 7rem;
+    padding: 0px 1rem;
+    font-size: 2.5rem;
     text-align: center;
     position: relative;
 }
@@ -42,14 +49,15 @@ body{
 }
 .tankGame-container .dataBox .myLevel .button{
     width: 100%;
-    padding: 8%;
+    padding: 8% 0%;
     border-radius: 6px;
     background: rgb(0,174,239);
     cursor: pointer;
-    margin-bottom: 10px;
+    margin-bottom: 2%;
+    font-size: 1.5rem;
 }
 .tankGame-container .dataBox .myBlood{
-    width: 20px;
+    width: 2rem;
     height: 70%;
     border-radius: 3px;
     border: 1px solid black;
@@ -77,8 +85,8 @@ body{
 .tank{  /* 坦克宽度50px（2个单位） */
 
     /* js中会重新设置宽、高 */
-    width: 50px;
-    height: 50px;
+    width: 5rem;
+    height: 5rem;
 
     padding: 0px;
     margin: 0px;
@@ -141,8 +149,8 @@ body{
 
 /* 子弹 */
 .bullet{
-    width: 5px;
-    height: 5px;
+    width: 0.5rem;
+    height: 0.5rem;
     border-radius: 100%;
     background: yellow;
     display: inline-block;

@@ -6,14 +6,20 @@
 
     // 构造函数（参数：初始位置）
     var bulletClass = function( posX, posY, creater ){
-        this.speed = 20;// 不能大于this.cellSize，否则会出现 砖头被间隔射击 的情况
+
+        this.speed = this.cellSize * 0.8;// 不能大于this.cellSize，否则会出现 砖头被间隔射击 的情况(rem)
+
         this.creater = creater;// 创建人（用于确定攻击对象，敌人之间不能互相残杀）
         this.$bullet = this.createBullet( posX, posY );
     };
 
     // 所有对象共用属性
     bulletClass.prototype.mapArr = null;// 指向地图数组 的指针
+    bulletClass.prototype.mapArrWidthLength = 0;
+    bulletClass.prototype.mapArrHeightLength = 0;
+
     bulletClass.prototype.cellSize = null;
+    bulletClass.prototype.remToPx = null;
 
     // 创建一颗子弹，返回子弹的jq对象
     bulletClass.prototype.createBullet = function( posX, posY ){
@@ -30,7 +36,7 @@
         //console.log( bulletClass.prototype.mapArr );
 
         var _container = this.$bullet.parents('.container');// 承载坦克的容器（必须要等坦克加到.container后）
-        var speed = this.speed;// 步长
+        var speed_px = this.speed * bulletClass.prototype.remToPx;// 步长(px)
 
         // 不断运动
         var temp = setInterval( function(){
@@ -41,36 +47,36 @@
 
             switch( direction ) {
                 case 'top':{
-                    if ( _top - speed >= 0  &&  isCanPass.call( this, _left, _top - speed, direction ) ) { // 不允许超出 .container 的边界 且 新位置 可通过（为0）
-                        this.$bullet.css('top', '-=' + speed + 'px');
+                    if ( _top - speed_px >= 0  &&  isCanPass.call( this, _left, _top - speed_px, direction ) ) { // 不允许超出 .container 的边界 且 新位置 可通过（为0）
+                        this.$bullet.css('top', '-=' + speed_px + 'px');
                     }
                     else stopBulletShoot( temp, callbackFunc );// 子弹停止运动
                     break;
                 }
                 case 'bottom':{
-                    if( _top + speed <= _container.height() - this.$bullet.height()  &&  isCanPass.call( this, _left, _top + speed, direction ) ) { // 不允许超出 .container 的边界 且 新位置 可通过（为0）
-                        this.$bullet.css('top', '+=' + speed + 'px');
+                    if( _top + speed_px <= _container.height() - this.$bullet.height()  &&  isCanPass.call( this, _left, _top + speed_px, direction ) ) { // 不允许超出 .container 的边界 且 新位置 可通过（为0）
+                        this.$bullet.css('top', '+=' + speed_px + 'px');
                     }
                     else stopBulletShoot( temp, callbackFunc );// 子弹停止运动
                     break;
                 }
                 case 'left':{
-                    if( _left - speed >= 0  &&  isCanPass.call( this, _left - speed, _top, direction ) ) { // 不允许超出 .container 的边界 且 新位置 可通过（为0）
-                        this.$bullet.css('left', '-=' + speed + 'px');
+                    if( _left - speed_px >= 0  &&  isCanPass.call( this, _left - speed_px, _top, direction ) ) { // 不允许超出 .container 的边界 且 新位置 可通过（为0）
+                        this.$bullet.css('left', '-=' + speed_px + 'px');
                     }
                     else stopBulletShoot( temp, callbackFunc );// 子弹停止运动
                     break;
                 }
                 case 'right':{
-                    if( _left + speed <= _container.width() - this.$bullet.width()  &&  isCanPass.call( this, _left + speed, _top, direction ) ) { // 不允许超出 .container 的边界 且 新位置 可通过（为0）
-                        this.$bullet.css('left', '+=' + speed + 'px');
+                    if( _left + speed_px <= _container.width() - this.$bullet.width()  &&  isCanPass.call( this, _left + speed_px, _top, direction ) ) { // 不允许超出 .container 的边界 且 新位置 可通过（为0）
+                        this.$bullet.css('left', '+=' + speed_px + 'px');
                     }
                     else stopBulletShoot( temp, callbackFunc );// 子弹停止运动
                     break;
                 }
             }
 
-        }.bind( this ), 100 );
+        }.bind( this ), 30 );
 
         // （辅助函数）是否可通过 （遇到障碍物/射到坦克/到容器边界，则不可通过）
         function isCanPass( positionX, positionY, direction ){
@@ -78,9 +84,11 @@
             // 子弹发射地方在两个障碍物之间的缝隙，因此默认先射击 向下取整 的障碍物，然后射击 向上取整 的障碍物。
             // 射击顺序类比 层次遍历 !! 左上方优先射击
 
+            var _cellSize_px =  this.cellSize * bulletClass.prototype.remToPx;// 单位长度（px)
+
             // 求子弹当前位置对应 mapArr[]的下标。先向下取整。（Math.floor()向下取整）
-            var posX = Math.floor( positionX / this.cellSize );
-            var posY = Math.floor( positionY / this.cellSize );
+            var posX = Math.floor( positionX / _cellSize_px );
+            var posY = Math.floor( positionY / _cellSize_px );
 
             // 向下取整
             if( !returnIsCanPass.call( this, posX, posY ) ){
@@ -90,12 +98,12 @@
 
                 if( direction == 'top'  ||  direction == 'bottom' ){// 垂直飞行
 
-                    posX = Math.ceil( positionX / this.cellSize );// 横坐标 向上取整
+                    posX = Math.ceil( positionX / _cellSize_px );// 横坐标 向上取整
                     return returnIsCanPass.call( this, posX, posY );
 
                 }else if( direction == 'left'  ||  direction == 'right' ){// 水平飞行
 
-                    posY = Math.ceil( positionY / this.cellSize );// 纵坐标 向上取整
+                    posY = Math.ceil( positionY / _cellSize_px );// 纵坐标 向上取整
                     return returnIsCanPass.call( this, posX, posY );
                 }
 
@@ -103,6 +111,8 @@
 
             // （辅助函数）传入一个位置，返回是否可通过（this是 子弹类对象）
             function returnIsCanPass( posX, posY ){
+
+                if( posX != parseInt( posX )  ||  posY != parseInt( posY) ) return false;// 位置不是整数
 
                 //【墙】 向上/向下取整 碰到 墙 都不可通过
                 if( this.mapArr[posY][posX] == 2 ) return false;
