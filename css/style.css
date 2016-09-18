@@ -6,14 +6,25 @@ body{
 .tankGame-container{
     width: 75rem;
     height: 65rem;
-    margin: 1% auto;
+    margin: 0% auto;
+    margin-top: 2rem;
+
     position: relative;
-    overflow: hidden;
+    /*overflow: hidden;*/
 }
 .tankGame-container > *{
     /*display: inline-block;*/
     float: left;
     height: inherit;
+}
+.tankGame-container > p{
+    font-size: 1.8rem;
+    font-weight: bold;
+    position: absolute;
+    z-index: 1000;
+    top: -3.3rem;
+    left: 10%;
+    color: green;
 }
 
 /* 游戏容器 */
